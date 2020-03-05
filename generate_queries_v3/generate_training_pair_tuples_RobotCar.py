@@ -34,12 +34,15 @@ def load_sequence():
 	return seq_dirs
 	
 def main():
-	seq_dirs = load_sequence()
+	seq_dirs = sorted(load_sequence())
 	seq_pc_dict = {}
+	
+
 	for i,cur_dir in enumerate(seq_dirs):
 		#if i>2:
 		#	break;
 		print("\n\n",cur_dir)
+
 		#load position gps/ins data for cur_dir
 		POS_FILE_PATH = os.path.join(TRAJ_PATH,cur_dir,"gps/ins.csv")
 		pos_data = pd.read_csv(POS_FILE_PATH)
@@ -51,7 +54,11 @@ def main():
 		
 		#load image time and give its time
 		IMG_TIME_FILE_PATH = os.path.join(IMG_PATH,cur_dir,"stereo.timestamps")
-		image_time = np.loadtxt(IMG_TIME_FILE_PATH)
+		image_time = pd.read_csv(IMG_TIME_FILE_PATH,sep=" ", header=None)
+		image_time = image_time.dropna(axis=0,how='any')
+		image_time = np.array(image_time)
+		
+		#image_time = np.loadtxt(IMG_TIME_FILE_PATH)
 		
 		#remove image that is out of ins time range
 		start_index = 0
@@ -67,9 +74,10 @@ def main():
 			if early_end:
 				break
 		
-		print(start_index,end_index)
 		image_time = image_time[start_index:end_index,:]
-			
+		
+		
+		
 		#give time & pos to image saved in image pos
 		nearest_time_dis,nearest_time_index = time_tree.query(image_time[:,0:1],k=1)
 		nearest_time_index = np.array(nearest_time_index).flatten()
@@ -77,16 +85,24 @@ def main():
 		image_pos_tree = KDTree(image_pos[:,1:3])
 		image_time_tree = KDTree(image_pos[:,0:1])
 		
+		
 		#load pointcloud time and pos
 		PC_TIME_POS_PATH = os.path.join(PC_PATH,cur_dir,"pointcloud_locations_20m_10overlap.csv")
-		pc_time_pos = pd.read_csv(PC_TIME_POS_PATH)
-		pc_time_pos = np.array(pc_time_pos)
+		pc_time_pos = pd.read_csv(PC_TIME_POS_PATH,header=0)
+		pc_time_pos = np.array(pc_time_pos).astype(np.double)
+		
 		
 		#match between pointcloud and image according to pos&timestamp
 		positive_img_pos_tmp = image_pos_tree.query_radius(pc_time_pos[:,1:3],r=10)
-		_,positive_img_ind = image_time_tree.query(pc_time_pos[:,0:1],k=1)
+		time_gap,positive_img_ind = image_time_tree.query(pc_time_pos[:,0:1],k=1)
+
+		
 		positive_img_pos_tmp = np.array(positive_img_pos_tmp)
 		positive_img_ind = np.array(positive_img_ind)
+		for i in range(time_gap.shape[0]):
+			if time_gap[i] > 2e6 :
+				positive_img_ind[i] = -1
+				
 		
 		#max_len for near neighbor
 		max_len = 0
@@ -121,18 +137,24 @@ def main():
 		#construct point cloud image match dict
 		cur_pc_img_pair_dict = {}
 		
+		
 		for i in range(pc_time_pos.shape[0]):
+			#print("all pc = %d , num = %d positive  number = %d"%(pc_time_pos.shape[0],i,len(image_time[positive_img[i],0])))
+			#if len(positive_img[i])<=0:
+			#	print(i)
 			cur_pc_img_pair_dict[str(pc_time_pos[i,0].astype(np.int))] = image_time[positive_img[i],0].astype(np.int)
+		
 		
 		#print(cur_pc_img_pair_dict.keys())
 		seq_pc_dict[cur_dir] = cur_pc_img_pair_dict
+	
 	
 	#verify the correctness of the file
 	print(seq_pc_dict.keys())
 	print("--------------------------split--------------------------------")
 	
 	#save the dictionary into file
-	filename = "pcai_pointcloud_image_match.pickle"
+	filename = "stereo_centre_pointcloud_image_match.pickle"
 	with open(filename, 'wb') as handle:
 		pickle.dump(seq_pc_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	

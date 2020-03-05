@@ -106,4 +106,19 @@ def load_img_pc(load_pc_filenames,load_img_filenames,pool):
 		imgs=np.array(imgs)
 	
 	return pcs,imgs
+
+def load_img_pc_from_net(load_pc_filenames,load_img_filenames,pool):
+	NET_PATH = "/media/lyh/shared_space/lyh/dataset/ROBOTCAR/"
+	for i in range(len(load_img_filenames)):
+		substr = load_img_filenames[i].split('/')
+		load_img_filenames[i] = os.path.join(NET_PATH,substr[-4],substr[-3],substr[-2],substr[-1])
+	pcs = []
+	imgs = []
+	if load_pc_filenames != None:
+		pcs = pool.map(load_pc_file,load_pc_filenames)
+		pcs = np.array(pcs)
+	if load_img_filenames != None:
+		imgs = pool.map(load_image,load_img_filenames)
+		imgs=np.array(imgs)
 	
+	return pcs,imgs

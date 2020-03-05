@@ -184,10 +184,10 @@ class NetVLAD(PoolingBaseModel):
         vlad = tf.subtract(vlad,a)
         
 
-        vlad = tf.nn.l2_normalize(vlad,1)
+        #vlad = tf.nn.l2_normalize(vlad,1)
 
         vlad = tf.reshape(vlad,[-1, self.cluster_size*self.feature_size])
-        vlad = tf.nn.l2_normalize(vlad,1)
+        #vlad = tf.nn.l2_normalize(vlad,1)
 
         hidden1_weights = tf.get_variable("hidden1_weights",
           [self.cluster_size*self.feature_size, self.output_dim],

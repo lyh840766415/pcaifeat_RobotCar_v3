@@ -8,15 +8,13 @@ def endpoints(image, is_training):
     if image.get_shape().ndims != 4:
         raise ValueError('Input must be of size [batch, height, width, 3]')
 
-    image = image - tf.constant(_RGB_MEAN, dtype=tf.float32, shape=(1,1,1,3))
+    #image = image - tf.constant(_RGB_MEAN, dtype=tf.float32, shape=(1,1,1,3))
 
     with tf.contrib.slim.arg_scope(resnet_arg_scope(batch_norm_decay=0.9, weight_decay=0.0)):
-        _, endpoints = resnet_v1_50(image, num_classes=None, is_training=is_training, global_pool=False)
+        _, endpoints = resnet_v1_50(image, num_classes=None, is_training=is_training, global_pool=True)
         
 
-    print(endpoints['img_var/resnet_v1_50/block4'])
-    #endpoints['model_output'] = endpoints['global_pool'] = tf.reduce_mean(
-    #    endpoints['img_var/resnet_v1_50/block4'], [1, 2], name='pool5')
+    endpoints['model_output'] = endpoints['global_pool'] = tf.reduce_mean(
+        endpoints['img_var/resnet_v1_50/block4'], [1, 2], name='pool5')
 
-    return endpoints, 'resnet_v1_50'
-
+    return endpoints['model_output'], 'resnet_v1_50'

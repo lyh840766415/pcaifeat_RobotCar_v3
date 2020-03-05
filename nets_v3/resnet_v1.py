@@ -216,7 +216,7 @@ def resnet_v1(inputs,
         net = resnet_utils.stack_blocks_dense(net, blocks, output_stride)
         if global_pool:
           # Global average pooling.
-          net = tf.reduce_mean(net, [1, 2], name='pool5', keep_dims=True)   
+          net = tf.reduce_mean(net, [1, 2], name='pool5', keep_dims=True)
         if num_classes is not None:
           net = slim.conv2d(net, num_classes, [1, 1], activation_fn=None,
                             normalizer_fn=None, scope='logits')
@@ -253,25 +253,6 @@ def resnet_v1_block(scope, base_depth, num_units, stride):
       'depth_bottleneck': base_depth,
       'stride': stride
   }])
-
-
-def resnet_v1_fusion(inputs,
-                 num_classes=None,
-                 is_training=True,
-                 global_pool=True,
-                 output_stride=None,
-                 spatial_squeeze=True,
-                 reuse=None,
-                 scope='resnet_v1_fusion'):
-  """ResNet-50 model of [1]. See resnet_v1() for arg and return description."""
-  blocks = [
-      resnet_v1_block('block1', base_depth=512, num_units=3, stride=2),
-  ]
-  return resnet_v1(inputs, blocks, num_classes, is_training,
-                   global_pool=global_pool, output_stride=output_stride,
-                   include_root_block=False, spatial_squeeze=spatial_squeeze,
-                   reuse=reuse, scope=scope)
-resnet_v1_fusion.default_image_size = resnet_v1.default_image_size
 
 
 def resnet_v1_50(inputs,

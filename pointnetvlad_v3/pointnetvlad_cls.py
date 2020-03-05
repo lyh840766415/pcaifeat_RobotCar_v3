@@ -70,7 +70,7 @@ def pointnetvlad(point_cloud, is_training, bn_decay=None):
     #print(output)
 
     #normalize to have norm 1
-    #output = tf.nn.l2_normalize(output,1)
+    output = tf.nn.l2_normalize(output,1)
     #output =  tf.reshape(output,[batch_num_queries,num_pointclouds_per_query,OUTPUT_DIM])
 
     return output
