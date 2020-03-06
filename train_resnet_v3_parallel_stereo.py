@@ -14,7 +14,7 @@ import cv2
 pool = ThreadPool(10)
 
 # is rand init 
-RAND_INIT = True
+RAND_INIT = False
 # model path
 MODEL_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v2/model_v3/pcai_model/model_00015005.ckpt"
 PC_MODEL_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v2/model/pc_model/pc_model_00525175.ckpt"
@@ -44,7 +44,7 @@ LOAD_BATCH_SIZE = 100
 FEAT_BATCH_SIZE = 2
 LOAD_FEAT_RATIO = LOAD_BATCH_SIZE//FEAT_BATCH_SIZE
 EMBBED_SIZE = 256
-BASE_LEARNING_RATE = 5e-5
+BASE_LEARNING_RATE = 3.6e-5
 
 #pos num,neg num,other neg num,all_num
 POS_NUM = 2

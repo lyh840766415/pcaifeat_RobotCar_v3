@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 from loading_input_v3 import *
 from pointnetvlad_v3.pointnetvlad_cls import *
-import nets_v3.resnetvlad_v1_50 as resnet
+import nets_v3.resnetvlad_no_norm_v1_50 as resnet
 
 import shutil
 from multiprocessing.dummy import Pool as ThreadPool
@@ -11,16 +11,16 @@ import time
 import cv2
 
 #thread pool
-pool = ThreadPool(20)
+pool = ThreadPool(40)
 
 # is rand init 
-RAND_INIT = True
+RAND_INIT = False
 # model path
 MODEL_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v2/model_v3/pcai_model/model_00015005.ckpt"
 PC_MODEL_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v2/model/pc_model/pc_model_00525175.ckpt"
-IMG_MODEL_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v2/model/img_model/img_model_00291097.ckpt"
+IMG_MODEL_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v3/log/train_save_v3_resnetvlad/img_model_00198066.ckpt"
 # log path
-LOG_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v3/log/train_save_v3_resnetvlad_no_norm/"
+LOG_PATH = "/data/lyh/lab/pcaifeat_RobotCar_v3/log/train_save_v3_resnetvlad_no_norm"
 # 1 for point cloud only, 2 for image only, 3 for pc&img&fc
 TRAINING_MODE = 2
 #TRAIN_ALL = True
@@ -39,12 +39,12 @@ SENSOR = "mono_left"
 
 
 # Epoch & Batch size &FINAL EMBBED SIZE & learning rate
-EPOCH = 20
+EPOCH = 5
 LOAD_BATCH_SIZE = 100
 FEAT_BATCH_SIZE = 2
 LOAD_FEAT_RATIO = LOAD_BATCH_SIZE//FEAT_BATCH_SIZE
 EMBBED_SIZE = 256
-BASE_LEARNING_RATE = 5e-5
+BASE_LEARNING_RATE = 3.6e-5
 
 #pos num,neg num,other neg num,all_num
 POS_NUM = 2
@@ -230,8 +230,9 @@ def model_save(sess,step,train_saver):
 	return
 
 def get_correspond_img(pc_filename):
-	timestamp = pc_filename[-20:-4]
-	seq_name = pc_filename[-65:-46]
+	splited = pc_filename.split('/')
+	timestamp = splited[-1][:-4]
+	seq_name = splited[-3]
 	image_ind = PC_IMG_MATCH_DICT[seq_name][timestamp]
 	if len(image_ind) <= 0:
 		return None
